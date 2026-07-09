@@ -9,6 +9,7 @@ namespace ly
         : mTargetFrameRate{ 60.f }
     {
         InitWindow(windowWidth, windowHeight, title.c_str());
+        SetTargetFPS(60);
     }
 
     Application::~Application()
