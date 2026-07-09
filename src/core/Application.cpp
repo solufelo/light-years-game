@@ -19,15 +19,12 @@ namespace ly
 
     void Application::Run()
     {
-        auto lastTime = std::chrono::high_resolution_clock::now();
         float accumulatedTime = 0.f;
         const float targetDeltaTime = 1.f / mTargetFrameRate;
 
         while (!WindowShouldClose())
         {
-            auto currentTime = std::chrono::high_resolution_clock::now();
-            float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
-            lastTime = currentTime;
+            float deltaTime = GetFrameTime();
 
             // Cap delta time to prevent "spiral of death" during lag spikes
             if (deltaTime > 0.25f)
