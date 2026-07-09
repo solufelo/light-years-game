@@ -1,51 +1,59 @@
 #include "core/Application.h"
+#include <raylib.h>
+#include <chrono>
 
 namespace ly
 {
     Application::Application(unsigned int windowWidth, unsigned int windowHeight,
                              const std::string& title)
-        : mWindow{ sf::VideoMode({windowWidth, windowHeight}), title },
-          mTargetFrameRate{ 60.f },
-          mTickClock{}
+        : mTargetFrameRate{ 60.f }
     {
+        InitWindow(windowWidth, windowHeight, title.c_str());
+    }
+
+    Application::~Application()
+    {
+        CloseWindow();
     }
 
     void Application::Run()
     {
-        mTickClock.restart();
+        auto lastTime = std::chrono::high_resolution_clock::now();
         float accumulatedTime = 0.f;
         const float targetDeltaTime = 1.f / mTargetFrameRate;
 
-        while (mWindow.isOpen())
+        while (!WindowShouldClose())
         {
-            while (const std::optional event = mWindow.pollEvent())
+            auto currentTime = std::chrono::high_resolution_clock::now();
+            float deltaTime = std::chrono::duration<float>(currentTime - lastTime).count();
+            lastTime = currentTime;
+
+            // Cap delta time to prevent "spiral of death" during lag spikes
+            if (deltaTime > 0.25f)
             {
-                if (event->is<sf::Event::Closed>())
-                {
-                    mWindow.close();
-                }
+                deltaTime = 0.25f;
             }
 
-            accumulatedTime += mTickClock.restart().asSeconds();
-            while (accumulatedTime > targetDeltaTime)
+            accumulatedTime += deltaTime;
+            while (accumulatedTime >= targetDeltaTime)
             {
-                accumulatedTime -= targetDeltaTime;
                 TickInternal(targetDeltaTime);
+                accumulatedTime -= targetDeltaTime;
             }
+
             RenderInternal();
         }
     }
 
     void Application::TickInternal(float deltaTime)
     {
-        // Phase 2: world->Tick(deltaTime)
         (void)deltaTime;
     }
 
     void Application::RenderInternal()
     {
-        mWindow.clear(sf::Color{ 10, 10, 26 }); // deep space, not pure black
-        // Phase 2: world->Render(mWindow)
-        mWindow.display();
+        BeginDrawing();
+        ClearBackground(Color{ 10, 10, 26, 255 }); // deep space, not pure black
+        EndDrawing();
     }
 }
